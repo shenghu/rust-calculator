@@ -9,5 +9,5 @@ pub mod input;
 pub mod ui;
 
 // Re-export main types for convenience
-pub use calculator::{Calculator, Operation};
+pub use calculator::{Calculator, CalculatorError, Operation};
 pub use ui::{CalculatorUIState, MessageResult, UIMessage};
