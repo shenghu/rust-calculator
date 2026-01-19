@@ -258,7 +258,7 @@ impl Calculator {
     /// Finds the start position of the number before an operator.
     pub fn find_number_start(&self, s: &str) -> usize {
         for (i, c) in s.chars().rev().enumerate() {
-            if !c.is_digit(10) && c != '.' {
+            if !c.is_ascii_digit() && c != '.' {
                 return s.len() - i;
             }
         }
@@ -268,7 +268,7 @@ impl Calculator {
     /// Finds the end position of the number after an operator.
     pub fn find_number_end(&self, s: &str) -> usize {
         for (i, c) in s.chars().enumerate() {
-            if !c.is_digit(10) && c != '.' {
+            if !c.is_ascii_digit() && c != '.' {
                 return i;
             }
         }
@@ -303,7 +303,7 @@ impl Calculator {
         let mut current_num = String::new();
 
         for c in expr.chars() {
-            if c.is_digit(10) || c == '.' {
+            if c.is_ascii_digit() || c == '.' {
                 current_num.push(c);
             } else if c == '+' || c == '-' {
                 if !current_num.is_empty() {
@@ -344,7 +344,7 @@ impl Calculator {
         let mut current_num = String::new();
 
         for c in expr.chars() {
-            if c.is_digit(10) || c == '.' {
+            if c.is_ascii_digit() || c == '.' {
                 current_num.push(c);
             } else if c == '+' || c == '-' {
                 if !current_num.is_empty() {
