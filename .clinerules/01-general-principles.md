@@ -2,7 +2,11 @@
 
 Project-specific code principles for the rust-calculator codebase, ensuring high-quality, performant, and maintainable code through strict compilation standards, comprehensive testing, and proactive performance evaluation.
 
-Follow the best practices of the language, e.g., `03-rust-best-practices.md` for Rust.
+## Development Methodology
+
+- Follow 06-github-workflow.md to create and switch to a new local branch before making any code changes.
+- Use Test Driven Development. Start with test cases. Followed by source code changes.
+- Follow the best practices of the language, e.g., `03-rust-best-practices.md` for Rust.
 
 ## Before make changes
 
