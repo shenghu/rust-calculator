@@ -80,6 +80,39 @@ fn test_display_string_preserves_decimals() {
     assert_eq!(calc.display_string(), "8.000");
 }
 
+#[test]
+fn test_display_string_negative_operands_with_parentheses() {
+    let mut calc = Calculator::new();
+
+    // Test addition with negative operand
+    calc.expression = "7+-9".to_string();
+    assert_eq!(calc.display_string(), "7+(-9)");
+
+    // Test subtraction with negative operand
+    calc.expression = "10--5".to_string();
+    assert_eq!(calc.display_string(), "10-(-5)");
+
+    // Test multiplication with negative operand
+    calc.expression = "3x-4".to_string();
+    assert_eq!(calc.display_string(), "3x(-4)");
+
+    // Test division with negative operand
+    calc.expression = "8÷-2".to_string();
+    assert_eq!(calc.display_string(), "8÷(-2)");
+
+    // Test multiple negative operands
+    calc.expression = "5+-3x-2".to_string();
+    assert_eq!(calc.display_string(), "5+(-3)x(-2)");
+
+    // Test positive operands (no parentheses)
+    calc.expression = "7+9".to_string();
+    assert_eq!(calc.display_string(), "7+9");
+
+    // Test negative number at start (no parentheses)
+    calc.expression = "-5+3".to_string();
+    assert_eq!(calc.display_string(), "-5+3");
+}
+
 // Test from lib_tests.rs for display-related function
 #[test]
 fn test_format_large_numbers() {
