@@ -37,10 +37,10 @@ impl Calculator {
             Operation::Divide => "÷",
         };
         // If the expression ends with an operator, replace it instead of appending
-        if let Some(last_char) = self.expression.chars().last() {
-            if "+-x÷".contains(last_char) {
-                self.expression.pop();
-            }
+        if let Some(last_char) = self.expression.chars().last()
+            && "+-x÷".contains(last_char)
+        {
+            self.expression.pop();
         }
         self.expression.push_str(op_char);
         self.new_input = true;

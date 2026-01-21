@@ -8,19 +8,19 @@ impl Calculator {
         let mut i = 0;
         while i < chars.len() {
             let c = chars[i];
-            if c.is_digit(10)
+            if c.is_ascii_digit()
                 || c == '.'
-                || (c == '-' && i + 1 < chars.len() && chars[i + 1].is_digit(10))
+                || (c == '-' && i + 1 < chars.len() && chars[i + 1].is_ascii_digit())
             {
                 let start = i;
                 i += 1;
                 while i < chars.len() && {
                     let nc = chars[i];
-                    nc.is_digit(10)
+                    nc.is_ascii_digit()
                         || nc == '.'
                         || (nc == 'e' && i + 1 < chars.len() && {
                             let next = chars[i + 1];
-                            next.is_digit(10) || next == '+' || next == '-'
+                            next.is_ascii_digit() || next == '+' || next == '-'
                         })
                 } {
                     i += 1;

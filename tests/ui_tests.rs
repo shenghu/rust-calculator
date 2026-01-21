@@ -1,3 +1,4 @@
+use iced::keyboard;
 use rust_calculator::{CalculatorUIState, MessageResult, Operation, UIMessage};
 
 #[test]
