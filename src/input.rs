@@ -177,11 +177,13 @@ impl Calculator {
             } else {
                 toggled.to_string()
             };
-            // Update the last part of expression
-            if let Some(last_space) = self.expression.rfind(' ') {
-                self.expression.truncate(last_space + 1);
-                self.expression.push_str(&self.display);
+            // Update the current number in the expression
+            if let Some(last_op_pos) = self.expression.rfind(|c: char| "+-x÷".contains(c)) {
+                // Replace the number after the last operator
+                let start_pos = last_op_pos + 1;
+                self.expression.replace_range(start_pos.., &self.display);
             } else {
+                // No operators, replace the entire expression
                 self.expression = self.display.clone();
             }
         }
