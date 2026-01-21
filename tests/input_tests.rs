@@ -209,14 +209,14 @@ fn test_handle_sign_toggle_basic() {
     calc.expression = "5".to_string();
     calc.display = "5".to_string();
     calc.handle_sign_toggle_input();
-    assert_eq!(calc.display, "-5");
+    assert_eq!(calc.display, "(-5)");
 }
 
 #[test]
 fn test_handle_sign_toggle_negative() {
     let mut calc = Calculator::new();
-    calc.expression = "-3".to_string();
-    calc.display = "-3".to_string();
+    calc.expression = "(-3)".to_string();
+    calc.display = "(-3)".to_string();
     calc.handle_sign_toggle_input();
     assert_eq!(calc.display, "3");
 }

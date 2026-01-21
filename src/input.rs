@@ -3,7 +3,12 @@ use crate::calculator::{Calculator, Operation};
 impl Calculator {
     /// Handles number input for the calculator.
     pub fn handle_number_input(&mut self, digit: u8) {
-        if self.display == "Error" {
+        if self.display == "Error"
+            || self.display.starts_with("Invalid")
+            || self.display.starts_with("Division")
+            || self.display.starts_with("Number out of range")
+        {
+            // Clear any error state and start fresh
             self.expression = digit.to_string();
             self.display = digit.to_string();
             self.new_input = false;
@@ -170,31 +175,44 @@ impl Calculator {
     /// Handles sign toggle input for the calculator.
     pub fn handle_sign_toggle_input(&mut self) {
         if let Ok(value) = self.display.parse::<f64>() {
-            let toggled = -value;
             // Handle -0 case
-            let new_display = if toggled == 0.0 {
-                "0".to_string()
-            } else {
-                toggled.to_string()
-            };
+            if value == 0.0 {
+                self.display = "0".to_string();
+                return;
+            }
 
             // Check if we're in the middle of entering an expression with an operator
-            // This happens when the display shows only part of the expression
             if self.expression.contains(|c: char| "+-x÷".contains(c)) {
                 // There's an operator in the expression, so we're toggling the current operand
-                // The display shows the current operand being entered
-                self.display = new_display;
-
-                // Update the expression by replacing the current operand
                 // Find the last operator position
                 if let Some(last_op_pos) = self.find_last_operator_position(&self.expression) {
+                    let last_op = self.expression.chars().nth(last_op_pos).unwrap();
+
+                    // Replace the current number part with the negated version
                     self.expression.truncate(last_op_pos + 1);
-                    self.expression.push_str(&self.display);
+
+                    if value > 0.0 {
+                        // Positive number: add '-' prefix
+                        self.expression.push('-');
+                        self.expression.push_str(&value.to_string());
+                        self.display = format!("-{}", value);
+                    } else {
+                        // Negative number: remove '-' prefix
+                        self.expression.push_str(&value.abs().to_string());
+                        self.display = value.abs().to_string();
+                    }
+
+                    self.new_input = false;
                 }
             } else {
                 // No operator, just toggle the sign of the entire expression
-                self.expression = new_display.clone();
-                self.display = new_display;
+                if value > 0.0 {
+                    self.expression = format!("-{}", value);
+                    self.display = format!("-{}", value);
+                } else {
+                    self.expression = value.abs().to_string();
+                    self.display = value.abs().to_string();
+                }
             }
         }
     }
