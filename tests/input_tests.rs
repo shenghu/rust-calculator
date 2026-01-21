@@ -263,6 +263,23 @@ fn test_handle_sign_toggle_after_operation() {
 }
 
 #[test]
+fn test_handle_sign_toggle_after_operation_toggle_back() {
+    let mut calc = Calculator::new();
+    calc.handle_number_input(7);
+    calc.handle_operation_input(Operation::Add);
+    calc.handle_number_input(9);
+    calc.handle_sign_toggle_input();
+    // Expression should be "7+-9", display should be "-9"
+    assert_eq!(calc.expression, "7+-9");
+    assert_eq!(calc.display, "-9");
+
+    calc.handle_sign_toggle_input();
+    // After +/- again, expression should be "7+9", display should be "9"
+    assert_eq!(calc.expression, "7+9");
+    assert_eq!(calc.display, "9");
+}
+
+#[test]
 fn test_handle_clear_input() {
     let mut calc = Calculator::new();
     calc.expression = "123+456".to_string();

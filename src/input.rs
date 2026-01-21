@@ -172,21 +172,55 @@ impl Calculator {
         if let Ok(value) = self.display.parse::<f64>() {
             let toggled = -value;
             // Handle -0 case
-            self.display = if toggled == 0.0 {
+            let new_display = if toggled == 0.0 {
                 "0".to_string()
             } else {
                 toggled.to_string()
             };
-            // Update the current number in the expression
-            if let Some(last_op_pos) = self.expression.rfind(|c: char| "+-x÷".contains(c)) {
-                // Replace the number after the last operator
-                let start_pos = last_op_pos + 1;
-                self.expression.replace_range(start_pos.., &self.display);
+
+            // Check if we're in the middle of entering an expression with an operator
+            // This happens when the display shows only part of the expression
+            if self.expression.contains(|c: char| "+-x÷".contains(c)) {
+                // There's an operator in the expression, so we're toggling the current operand
+                // The display shows the current operand being entered
+                self.display = new_display;
+
+                // Update the expression by replacing the current operand
+                // Find the last operator position
+                if let Some(last_op_pos) = self.find_last_operator_position(&self.expression) {
+                    self.expression.truncate(last_op_pos + 1);
+                    self.expression.push_str(&self.display);
+                }
             } else {
-                // No operators, replace the entire expression
-                self.expression = self.display.clone();
+                // No operator, just toggle the sign of the entire expression
+                self.expression = new_display.clone();
+                self.display = new_display;
             }
         }
+    }
+
+    /// Finds the position of the last operator that separates operands.
+    /// This is different from rfind which finds any operator character.
+    /// It skips '-' when it's a sign for negative numbers.
+    pub fn find_last_operator_position(&self, expr: &str) -> Option<usize> {
+        let chars: Vec<char> = expr.chars().collect();
+        let mut i = chars.len() as i32 - 1;
+        while i >= 0 {
+            let c = chars[i as usize];
+            if "+-x÷".contains(c) {
+                // Check if this is a '-' followed by a digit (indicating it's a sign for negative number)
+                let is_negative_sign = c == '-'
+                    && i + 1 < chars.len() as i32
+                    && chars[(i + 1) as usize].is_ascii_digit();
+                if !is_negative_sign {
+                    // This is a separating operator
+                    return Some(i as usize);
+                }
+                // Skip this '-' as it's a sign
+            }
+            i -= 1;
+        }
+        None
     }
 
     /// Handles clear input for the calculator.
