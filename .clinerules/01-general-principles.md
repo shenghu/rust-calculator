@@ -2,14 +2,14 @@
 
 Project-specific code principles for the rust-calculator codebase, ensuring high-quality, performant, and maintainable code through strict compilation standards, comprehensive testing, and proactive performance evaluation.
 
-Follow the best practice of the lauguage, e.g. `rust-best-practices.md` for Rust.
+Follow the best practices of the language, e.g., `03-rust-best-practices.md` for Rust.
 
 ## Compilation standards
 
 - Ensure zero compilation errors and warnings in all code changes
 - Address any compiler warnings immediately before committing code
 - Maintain clean compilation output across all supported Rust versions
-- Ensure no unused codes, nor unused imports
+- Ensure no unused code or imports
 
 ## Testing requirements
 
