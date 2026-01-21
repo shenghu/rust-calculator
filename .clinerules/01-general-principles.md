@@ -4,6 +4,10 @@ Project-specific code principles for the rust-calculator codebase, ensuring high
 
 Follow the best practices of the language, e.g., `03-rust-best-practices.md` for Rust.
 
+## Before make changes
+
+- Follow `06-github-workflow.md` to create and switch to a new local branch before making any code changes.
+
 ## Compilation standards
 
 - Ensure zero compilation errors and warnings in all code changes
