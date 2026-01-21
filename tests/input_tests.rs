@@ -43,7 +43,7 @@ fn test_handle_number_input_after_operation() {
     calc.handle_operation_input(Operation::Add);
     calc.handle_number_input(3);
     assert_eq!(calc.expression, "5+3");
-    assert_eq!(calc.display, "3");
+    assert_eq!(calc.display, "5+3");
     assert!(!calc.new_input);
 }
 
@@ -131,7 +131,7 @@ fn test_handle_decimal_input_after_operation() {
     calc.handle_operation_input(Operation::Add);
     calc.handle_decimal_input();
     assert_eq!(calc.expression, "5+0.");
-    assert_eq!(calc.display, "0.");
+    assert_eq!(calc.display, "5+0.");
 }
 
 #[test]
@@ -252,14 +252,14 @@ fn test_handle_sign_toggle_after_operation() {
     calc.handle_number_input(7);
     calc.handle_operation_input(Operation::Add);
     calc.handle_number_input(9);
-    // Expression should be "7+9", display should be "9"
+    // Expression should be "7+9", display should be "7+9"
     assert_eq!(calc.expression, "7+9");
-    assert_eq!(calc.display, "9");
+    assert_eq!(calc.display, "7+9");
 
     calc.handle_sign_toggle_input();
-    // After +/-, expression should be "7+-9", display should be "-9"
-    assert_eq!(calc.expression, "7+-9");
-    assert_eq!(calc.display, "-9");
+    // After +/-, expression should be "7+(-9)", display should be "7+(-9)"
+    assert_eq!(calc.expression, "7+(-9)");
+    assert_eq!(calc.display, "7+(-9)");
 }
 
 #[test]
@@ -269,14 +269,46 @@ fn test_handle_sign_toggle_after_operation_toggle_back() {
     calc.handle_operation_input(Operation::Add);
     calc.handle_number_input(9);
     calc.handle_sign_toggle_input();
-    // Expression should be "7+-9", display should be "-9"
-    assert_eq!(calc.expression, "7+-9");
-    assert_eq!(calc.display, "-9");
+    // Expression should be "7+(-9)", display should be "7+(-9)"
+    assert_eq!(calc.expression, "7+(-9)");
+    assert_eq!(calc.display, "7+(-9)");
 
     calc.handle_sign_toggle_input();
-    // After +/- again, expression should be "7+9", display should be "9"
+    // After +/- again, expression should be "7+9", display should be "7+9"
     assert_eq!(calc.expression, "7+9");
-    assert_eq!(calc.display, "9");
+    assert_eq!(calc.display, "7+9");
+}
+
+#[test]
+fn test_user_reported_bug_steps() {
+    // Simulate the exact steps the user described
+    let mut calc = Calculator::new();
+
+    // 1. Press `5`
+    calc.handle_number_input(5);
+    assert_eq!(calc.expression, "5");
+    assert_eq!(calc.display, "5");
+
+    // 2. Press `+`
+    calc.handle_operation_input(Operation::Add);
+    assert_eq!(calc.expression, "5+");
+    assert_eq!(calc.display, "5+");
+
+    // 3. Press `3`
+    calc.handle_number_input(3);
+    assert_eq!(calc.expression, "5+3");
+    assert_eq!(calc.display, "5+3");
+
+    // 4. Press `+/-` - this should toggle the sign of 3
+    calc.handle_sign_toggle_input();
+    assert_eq!(calc.expression, "5+(-3)");
+    assert_eq!(calc.display, "5+(-3)");
+
+    // 5. Press `=` - this should evaluate "5+(-3)" and show result
+    calc.handle_equals_input();
+    // The result should be 2
+    assert_eq!(calc.expression, "2");
+    assert_eq!(calc.display, "2");
 }
 
 #[test]
@@ -334,7 +366,7 @@ fn test_handle_decimal_input_complex_cases() {
     calc.handle_number_input(2);
     calc.handle_number_input(5);
     assert_eq!(calc.expression, "5+0.25");
-    assert_eq!(calc.display, "0.25");
+    assert_eq!(calc.display, "5+0.25");
 }
 
 #[test]
@@ -349,17 +381,17 @@ fn test_handle_backspace_complex_expression() {
 
     // Expression should be "123+45"
     assert_eq!(calc.expression, "123+45");
-    assert_eq!(calc.display, "45");
+    assert_eq!(calc.display, "123+45");
 
     // Backspace should remove '5'
     calc.handle_backspace_input();
     assert_eq!(calc.expression, "123+4");
-    assert_eq!(calc.display, "4");
+    assert_eq!(calc.display, "123+4");
 
     // Backspace should remove '4'
     calc.handle_backspace_input();
     assert_eq!(calc.expression, "123+");
-    assert_eq!(calc.display, "0");
+    assert_eq!(calc.display, "123+");
 
     // Backspace should remove '+'
     calc.handle_backspace_input();

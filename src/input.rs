@@ -19,7 +19,7 @@ impl Calculator {
             self.new_input = false;
         } else if self.new_input {
             self.expression.push_str(&digit.to_string());
-            self.display = digit.to_string();
+            self.display = self.display_string(); // Update display to show full expression
             self.new_input = false;
         } else if self.display == "0" {
             self.expression = digit.to_string();
@@ -48,6 +48,7 @@ impl Calculator {
             self.expression.pop();
         }
         self.expression.push_str(op_char);
+        self.display = self.display_string(); // Update display to show full expression
         self.new_input = true;
     }
 
@@ -92,7 +93,7 @@ impl Calculator {
             self.new_input = false;
         } else if self.new_input {
             self.expression.push_str("0.");
-            self.display = "0.".to_string();
+            self.display = self.display_string(); // Update display to show full expression
             self.new_input = false;
         } else if self.display == "0" {
             self.expression = "0.".to_string();
@@ -117,18 +118,13 @@ impl Calculator {
 
             // Update display based on what was removed
             if "+-x÷".contains(last_char) {
-                // Removed an operator, show the previous number
-                self.display = self.extract_last_number();
+                // Removed an operator, show the full expression
+                self.display = self.display_string();
                 self.new_input = true;
             } else {
-                // Removed a digit/decimal, update the current number display
-                self.display = self.extract_current_number();
-                if self.display.is_empty() {
-                    self.display = "0".to_string();
-                    self.new_input = false;
-                } else {
-                    self.new_input = true;
-                }
+                // Removed a digit/decimal, show the full expression
+                self.display = self.display_string();
+                self.new_input = !(self.expression.is_empty() || self.expression == "0");
             }
         } else if self.expression == "0" {
             // Already at minimum
@@ -174,45 +170,69 @@ impl Calculator {
 
     /// Handles sign toggle input for the calculator.
     pub fn handle_sign_toggle_input(&mut self) {
-        if let Ok(value) = self.display.parse::<f64>() {
-            // Handle -0 case
-            if value == 0.0 {
-                self.display = "0".to_string();
-                return;
-            }
+        // Check if we're in the middle of entering an expression with an operator
+        // Exclude parentheses and only check for actual mathematical operators
+        let has_operators = self.expression.contains(|c: char| "+x÷".contains(c))
+            || (self.expression.contains('-')
+                && self.find_last_operator_position(&self.expression).is_some());
 
-            // Check if we're in the middle of entering an expression with an operator
-            if self.expression.contains(|c: char| "+-x÷".contains(c)) {
-                // There's an operator in the expression, so we're toggling the current operand
-                // Find the last operator position
-                if let Some(last_op_pos) = self.find_last_operator_position(&self.expression) {
-                    let last_op = self.expression.chars().nth(last_op_pos).unwrap();
+        if has_operators {
+            // There's an operator in the expression, so we're toggling the current operand
+            // Find the last operator position
+            if let Some(last_op_pos) = self.find_last_operator_position(&self.expression) {
+                // Get the current number being entered (could be parenthesized)
+                let current_part = &self.expression[last_op_pos + 1..];
 
+                // Try to parse as a regular number first
+                let num_value = if let Ok(value) = current_part.parse::<f64>() {
+                    Some(value)
+                } else if current_part.starts_with("(-") && current_part.ends_with(')') {
+                    // Try parsing as parenthesized negative number
+                    current_part[1..current_part.len() - 1].parse::<f64>().ok()
+                } else {
+                    None
+                };
+
+                if let Some(num_value) = num_value {
                     // Replace the current number part with the negated version
                     self.expression.truncate(last_op_pos + 1);
 
-                    if value > 0.0 {
-                        // Positive number: add '-' prefix
-                        self.expression.push('-');
-                        self.expression.push_str(&value.to_string());
-                        self.display = format!("-{}", value);
+                    if num_value > 0.0 {
+                        // Positive number: add parentheses with minus sign
+                        self.expression.push_str(&format!("(-{})", num_value));
                     } else {
-                        // Negative number: remove '-' prefix
-                        self.expression.push_str(&value.abs().to_string());
-                        self.display = value.abs().to_string();
+                        // Negative number: remove parentheses
+                        self.expression.push_str(&num_value.abs().to_string());
                     }
 
+                    self.display = self.display_string(); // Update display to show full expression
                     self.new_input = false;
                 }
-            } else {
-                // No operator, just toggle the sign of the entire expression
-                if value > 0.0 {
-                    self.expression = format!("-{}", value);
-                    self.display = format!("-{}", value);
+            }
+        } else {
+            // No operator, just toggle the sign of the entire expression
+            // Handle the display format which may include parentheses
+            let (display_value, _is_from_parentheses) =
+                if self.display.starts_with("(-") && self.display.ends_with(')') {
+                    // Format like "(-3)" - this represents a negative number, so extract and keep as negative
+                    if let Ok(num_str) = self.display[1..self.display.len() - 1].parse::<f64>() {
+                        (num_str, true)
+                    } else {
+                        return; // Invalid format, do nothing
+                    }
+                } else if let Ok(value) = self.display.parse::<f64>() {
+                    // Regular number format
+                    (value, false)
                 } else {
-                    self.expression = value.abs().to_string();
-                    self.display = value.abs().to_string();
-                }
+                    return; // Cannot parse, do nothing
+                };
+
+            if display_value > 0.0 {
+                self.expression = format!("-{}", display_value);
+                self.display = format!("(-{})", display_value);
+            } else {
+                self.expression = display_value.abs().to_string();
+                self.display = display_value.abs().to_string();
             }
         }
     }

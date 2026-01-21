@@ -600,3 +600,13 @@ fn test_evaluate_add_sub_safe_bounds_checking() {
     let large_result = calc.evaluate_add_sub_safe("100000000000000000000000000000000000000");
     assert!(large_result.is_err() || large_result.is_ok()); // Either way, bounds are checked
 }
+
+#[test]
+fn test_specific_unary_minus_case() {
+    let calc = Calculator::new();
+
+    // Test the specific case: 5+(-3) should equal 2 (5 + (-3) = 2)
+    let result = calc.evaluate("5+(-3)");
+    println!("5+(-3) = {:?}", result);
+    assert_eq!(result, Ok(2.0));
+}

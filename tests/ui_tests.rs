@@ -29,7 +29,7 @@ fn test_process_message_operation_pressed_scroll() {
     let result = ui_state.process_message(UIMessage::OperationPressed(Operation::Add));
     assert_eq!(result, MessageResult::ScrollToEnd);
     assert_eq!(ui_state.calculator.expression, "123+");
-    assert_eq!(ui_state.calculator.display, "123");
+    assert_eq!(ui_state.calculator.display, "123+");
 }
 
 #[test]

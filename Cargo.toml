@@ -6,3 +6,7 @@ edition = "2024"
 [dependencies]
 iced = { version = "0.13.1", features = ["tokio", "canvas"] }
 meval = "0.2"
+
+# Note: The nom v1.2.4 warning is from iced's transitive dependency.
+# iced 0.14.0+ has breaking API changes, so we stay on 0.13.1.
+# The nom warning is expected and cannot be resolved without iced updating their dependencies.

@@ -39,4 +39,4 @@ When working on a GitHub issue (#X):
 - Before pushing: Rebase on main, run `cargo clippy -- -D warnings`, `cargo fmt`, `cargo test`
 - Ensure all CI checks pass before creating or requesting review of a PR
 - Create PR titled: `[{issue_id}] {short summary}`
-- PR body must include: "Resolves #{issue_id}"
+- PR body must include: "Resolves #{issue_id}" and summary of all commits included
