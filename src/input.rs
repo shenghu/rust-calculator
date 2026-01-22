@@ -170,14 +170,18 @@ impl Calculator {
 
     /// Handles sign toggle input for the calculator.
     pub fn handle_sign_toggle_input(&mut self) {
-        // Check if we're in the middle of entering an expression with an operator
-        // Exclude parentheses and only check for actual mathematical operators
-        let has_operators = self.expression.contains(|c: char| "+x÷".contains(c))
-            || (self.expression.contains('-')
-                && self.find_last_operator_position(&self.expression).is_some());
+        // Determine if we're toggling an operand within an expression or the entire expression
+        let has_operators = match (
+            self.expression.contains(|c: char| "+x÷".contains(c)),
+            self.expression.contains('-'),
+            self.find_last_operator_position(&self.expression),
+        ) {
+            (true, _, _) | (false, true, Some(_)) => true,
+            _ => false,
+        };
 
         if has_operators {
-            // There's an operator in the expression, so we're toggling the current operand
+            // Has operators - we're toggling an operand within an expression
             // Find the last operator position
             if let Some(last_op_pos) = self.find_last_operator_position(&self.expression) {
                 // Get the current number being entered (could be parenthesized)
@@ -222,7 +226,7 @@ impl Calculator {
                 }
             }
         } else {
-            // No operator, just toggle the sign of the entire expression
+            // No operators - just toggle the sign of the entire expression
             // Handle the display format which may include parentheses
             let (display_value, _is_from_parentheses) =
                 if self.display.starts_with("(-") && self.display.ends_with(')') {
@@ -236,7 +240,7 @@ impl Calculator {
                     // Regular number format
                     (value, false)
                 } else {
-                    return; // Cannot parse, do nothing
+                    return; // Invalid format, do nothing
                 };
 
             if display_value > 0.0 {
