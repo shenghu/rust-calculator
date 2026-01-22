@@ -20,8 +20,9 @@ When creating or being asked to create a GitHub issue:
 
 When working on a GitHub issue (#X):
 
-- Always create a new branch from `main` or `master` branch: `personal/{your-username}-{issue_id}` (e.g., `personal/shenghu-42`)
-- Rebase from `main` or `master` before making any changes.
+- Rebase local `main` branch from remote before making any changes
+- Always create a new branch from `main` or `master` branch: `personal/{your-username}-{issue_id}` (e.g., `personal/shenghu-42`).
+- Rebase the newly created local branch from remote `main` branch
 - Perform all development in this branch
 - Use Conventional Commits prefixes:
   - `feat:` New feature (MINOR semver)
