@@ -312,6 +312,37 @@ fn test_user_reported_bug_steps() {
 }
 
 #[test]
+fn test_sign_toggle_after_subtraction_bug() {
+    // Test the specific bug reported in issue #12
+    let mut calc = Calculator::new();
+
+    // 1. Press `5`
+    calc.handle_number_input(5);
+    assert_eq!(calc.expression, "5");
+    assert_eq!(calc.display, "5");
+
+    // 2. Press `-`
+    calc.handle_operation_input(Operation::Subtract);
+    assert_eq!(calc.expression, "5-");
+    assert_eq!(calc.display, "5-");
+
+    // 3. Press `3`
+    calc.handle_number_input(3);
+    assert_eq!(calc.expression, "5-3");
+    assert_eq!(calc.display, "5-3");
+
+    // 4. Press `+/-` - this should toggle the sign of 3 to become "5-(-3)"
+    calc.handle_sign_toggle_input();
+    assert_eq!(calc.expression, "5-(-3)");
+    assert_eq!(calc.display, "5-(-3)");
+
+    // 5. Press `+/-` again - this should toggle back to "5-3"
+    calc.handle_sign_toggle_input();
+    assert_eq!(calc.expression, "5-3");
+    assert_eq!(calc.display, "5-3");
+}
+
+#[test]
 fn test_handle_clear_input() {
     let mut calc = Calculator::new();
     calc.expression = "123+456".to_string();

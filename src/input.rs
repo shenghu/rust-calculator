@@ -187,8 +187,16 @@ impl Calculator {
                 let num_value = if let Ok(value) = current_part.parse::<f64>() {
                     Some(value)
                 } else if current_part.starts_with("(-") && current_part.ends_with(')') {
-                    // Try parsing as parenthesized negative number
+                    // Try parsing as parenthesized negative number like "(-3)"
                     current_part[1..current_part.len() - 1].parse::<f64>().ok()
+                } else if current_part.starts_with('-')
+                    && current_part.len() > 1
+                    && current_part[1..].starts_with("(-")
+                    && current_part.ends_with(')')
+                {
+                    // Try parsing as negative parenthesized number like "-(-3)"
+                    let inner = &current_part[2..current_part.len() - 1];
+                    inner.parse::<f64>().ok().map(|v| -v)
                 } else {
                     None
                 };
@@ -237,19 +245,28 @@ impl Calculator {
         }
     }
 
-    /// Finds the position of the last operator that separates operands.
-    /// This is different from rfind which finds any operator character.
-    /// It skips '-' when it's a sign for negative numbers.
+    /// Finds the position of the last operator that separates operands at the top level.
+    /// This handles parentheses properly - operators inside parentheses are ignored.
+    /// It skips '-' when it's a sign for negative numbers (at start or after another operator).
     pub fn find_last_operator_position(&self, expr: &str) -> Option<usize> {
         let chars: Vec<char> = expr.chars().collect();
         let mut i = chars.len() as i32 - 1;
+        let mut paren_depth = 0;
+
         while i >= 0 {
             let c = chars[i as usize];
-            if "+-x÷".contains(c) {
-                // Check if this is a '-' followed by a digit (indicating it's a sign for negative number)
-                let is_negative_sign = c == '-'
-                    && i + 1 < chars.len() as i32
-                    && chars[(i + 1) as usize].is_ascii_digit();
+            if c == ')' {
+                paren_depth += 1;
+            } else if c == '(' {
+                paren_depth -= 1;
+            } else if paren_depth == 0 && "+-x÷".contains(c) {
+                // We're at the top level and found an operator
+                // Check if this is a '-' that is a sign for a negative number
+                // A '-' is a negative sign if:
+                // 1. It's at the beginning of the expression (i == 0), OR
+                // 2. It's immediately after another operator
+                let is_negative_sign =
+                    c == '-' && (i == 0 || "+-x÷".contains(chars[(i - 1) as usize]));
                 if !is_negative_sign {
                     // This is a separating operator
                     return Some(i as usize);
