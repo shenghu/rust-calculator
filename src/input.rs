@@ -263,23 +263,25 @@ impl Calculator {
 
         while i >= 0 {
             let c = chars[i as usize];
-            if c == ')' {
-                paren_depth += 1;
-            } else if c == '(' {
-                paren_depth -= 1;
-            } else if paren_depth == 0 && "+-x÷".contains(c) {
-                // We're at the top level and found an operator
-                // Check if this is a '-' that is a sign for a negative number
-                // A '-' is a negative sign if:
-                // 1. It's at the beginning of the expression (i == 0), OR
-                // 2. It's immediately after another operator
-                let is_negative_sign =
-                    c == '-' && (i == 0 || "+-x÷".contains(chars[(i - 1) as usize]));
-                if !is_negative_sign {
-                    // This is a separating operator
-                    return Some(i as usize);
+            match (paren_depth, c, i) {
+                (_, ')', _) => paren_depth += 1,
+                (_, '(', _) => paren_depth -= 1,
+                (0, c, _) if "+-x÷".contains(c) => {
+                    // We're at the top level and found an operator
+                    // Check if this is a '-' that is a sign for a negative number
+                    let is_negative_sign = match (c, i) {
+                        ('-', 0) => true, // '-' at the beginning of expression
+                        ('-', i) if i > 0 && "+-x÷".contains(chars[(i - 1) as usize]) => true, // '-' after another operator
+                        _ => false, // separating operator
+                    };
+
+                    if !is_negative_sign {
+                        // This is a separating operator
+                        return Some(i as usize);
+                    }
+                    // Skip this '-' as it's a sign
                 }
-                // Skip this '-' as it's a sign
+                _ => {} // Continue to next character
             }
             i -= 1;
         }
