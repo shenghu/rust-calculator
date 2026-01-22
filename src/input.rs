@@ -183,22 +183,26 @@ impl Calculator {
                 // Get the current number being entered (could be parenthesized)
                 let current_part = &self.expression[last_op_pos + 1..];
 
-                // Try to parse as a regular number first
-                let num_value = if let Ok(value) = current_part.parse::<f64>() {
-                    Some(value)
-                } else if current_part.starts_with("(-") && current_part.ends_with(')') {
-                    // Try parsing as parenthesized negative number like "(-3)"
-                    current_part[1..current_part.len() - 1].parse::<f64>().ok()
-                } else if current_part.starts_with('-')
-                    && current_part.len() > 1
-                    && current_part[1..].starts_with("(-")
-                    && current_part.ends_with(')')
-                {
-                    // Try parsing as negative parenthesized number like "-(-3)"
-                    let inner = &current_part[2..current_part.len() - 1];
-                    inner.parse::<f64>().ok().map(|v| -v)
-                } else {
-                    None
+                // Try to parse different number formats using pattern matching
+                let num_value = match current_part {
+                    // Regular number
+                    s if s.parse::<f64>().is_ok() => s.parse::<f64>().ok(),
+                    // Parenthesized negative number like "(-3)"
+                    s if s.starts_with("(-") && s.ends_with(')') => {
+                        let inner = &s[2..s.len() - 1]; // Skip "(-" and ")"
+                        inner.parse::<f64>().ok().map(|v| -v)
+                    }
+                    // Negative parenthesized number like "-(-3)"
+                    s if s.starts_with('-')
+                        && s.len() > 3
+                        && s[1..].starts_with("(-")
+                        && s.ends_with(')') =>
+                    {
+                        let inner = &s[3..s.len() - 1]; // Skip "-(-" and ")"
+                        inner.parse::<f64>().ok()
+                    }
+                    // No valid format found
+                    _ => None,
                 };
 
                 if let Some(num_value) = num_value {
