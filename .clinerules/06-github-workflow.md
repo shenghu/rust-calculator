@@ -41,3 +41,14 @@ When working on a GitHub issue (#X):
 - Ensure all CI checks pass before creating or requesting review of a PR
 - Create PR titled: `[{issue_id}] {short summary}`
 - PR body must include: "Resolves #{issue_id}" and summary of all commits included
+
+### PR Review Comment Handling
+
+When addressing PR review comments:
+
+- **Locate the exact line**: Always check the line number specified in the review comment and examine the code at that exact location
+- **Understand the context**: Read the surrounding code and the comment body to understand what specific change is requested
+- **Implement at the correct location**: Make changes at the line/file specified in the review comment, not at similar-looking code elsewhere
+- **Verify the fix**: Ensure the change addresses the specific issue mentioned in the review comment
+- **Test thoroughly**: Run all tests and ensure the change doesn't break existing functionality
+- **Commit appropriately**: Use conventional commit prefixes (e.g., `fix:`, `refactor:`) based on the nature of the change
