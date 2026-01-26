@@ -170,27 +170,43 @@ impl Calculator {
 
     /// Handles sign toggle input for the calculator.
     pub fn handle_sign_toggle_input(&mut self) {
-        // Check if we're in the middle of entering an expression with an operator
-        // Exclude parentheses and only check for actual mathematical operators
-        let has_operators = self.expression.contains(|c: char| "+x÷".contains(c))
-            || (self.expression.contains('-')
-                && self.find_last_operator_position(&self.expression).is_some());
+        // Determine if we're toggling an operand within an expression or the entire expression
+        let has_operators = match (
+            self.expression.contains(|c: char| "+x÷".contains(c)),
+            self.expression.contains('-'),
+            self.find_last_operator_position(&self.expression),
+        ) {
+            (true, _, _) | (false, true, Some(_)) => true,
+            _ => false,
+        };
 
         if has_operators {
-            // There's an operator in the expression, so we're toggling the current operand
+            // Has operators - we're toggling an operand within an expression
             // Find the last operator position
             if let Some(last_op_pos) = self.find_last_operator_position(&self.expression) {
                 // Get the current number being entered (could be parenthesized)
                 let current_part = &self.expression[last_op_pos + 1..];
 
-                // Try to parse as a regular number first
-                let num_value = if let Ok(value) = current_part.parse::<f64>() {
-                    Some(value)
-                } else if current_part.starts_with("(-") && current_part.ends_with(')') {
-                    // Try parsing as parenthesized negative number
-                    current_part[1..current_part.len() - 1].parse::<f64>().ok()
-                } else {
-                    None
+                // Try to parse different number formats using pattern matching
+                let num_value = match current_part {
+                    // Regular number
+                    s if s.parse::<f64>().is_ok() => s.parse::<f64>().ok(),
+                    // Parenthesized negative number like "(-3)"
+                    s if s.starts_with("(-") && s.ends_with(')') => {
+                        let inner = &s[2..s.len() - 1]; // Skip "(-" and ")"
+                        inner.parse::<f64>().ok().map(|v| -v)
+                    }
+                    // Negative parenthesized number like "-(-3)"
+                    s if s.starts_with('-')
+                        && s.len() > 3
+                        && s[1..].starts_with("(-")
+                        && s.ends_with(')') =>
+                    {
+                        let inner = &s[3..s.len() - 1]; // Skip "-(-" and ")"
+                        inner.parse::<f64>().ok()
+                    }
+                    // No valid format found
+                    _ => None,
                 };
 
                 if let Some(num_value) = num_value {
@@ -210,7 +226,7 @@ impl Calculator {
                 }
             }
         } else {
-            // No operator, just toggle the sign of the entire expression
+            // No operators - just toggle the sign of the entire expression
             // Handle the display format which may include parentheses
             let (display_value, _is_from_parentheses) =
                 if self.display.starts_with("(-") && self.display.ends_with(')') {
@@ -224,7 +240,7 @@ impl Calculator {
                     // Regular number format
                     (value, false)
                 } else {
-                    return; // Cannot parse, do nothing
+                    return; // Invalid format, do nothing
                 };
 
             if display_value > 0.0 {
@@ -237,24 +253,35 @@ impl Calculator {
         }
     }
 
-    /// Finds the position of the last operator that separates operands.
-    /// This is different from rfind which finds any operator character.
-    /// It skips '-' when it's a sign for negative numbers.
+    /// Finds the position of the last operator that separates operands at the top level.
+    /// This handles parentheses properly - operators inside parentheses are ignored.
+    /// It skips '-' when it's a sign for negative numbers (at start or after another operator).
     pub fn find_last_operator_position(&self, expr: &str) -> Option<usize> {
         let chars: Vec<char> = expr.chars().collect();
         let mut i = chars.len() as i32 - 1;
+        let mut paren_depth = 0;
+
         while i >= 0 {
             let c = chars[i as usize];
-            if "+-x÷".contains(c) {
-                // Check if this is a '-' followed by a digit (indicating it's a sign for negative number)
-                let is_negative_sign = c == '-'
-                    && i + 1 < chars.len() as i32
-                    && chars[(i + 1) as usize].is_ascii_digit();
-                if !is_negative_sign {
-                    // This is a separating operator
-                    return Some(i as usize);
+            match (paren_depth, c, i) {
+                (_, ')', _) => paren_depth += 1,
+                (_, '(', _) => paren_depth -= 1,
+                (0, c, _) if "+-x÷".contains(c) => {
+                    // We're at the top level and found an operator
+                    // Check if this is a '-' that is a sign for a negative number
+                    let is_negative_sign = match (c, i) {
+                        ('-', 0) => true, // '-' at the beginning of expression
+                        ('-', i) if i > 0 && "+-x÷".contains(chars[(i - 1) as usize]) => true, // '-' after another operator
+                        _ => false, // separating operator
+                    };
+
+                    if !is_negative_sign {
+                        // This is a separating operator
+                        return Some(i as usize);
+                    }
+                    // Skip this '-' as it's a sign
                 }
-                // Skip this '-' as it's a sign
+                _ => {} // Continue to next character
             }
             i -= 1;
         }
