@@ -165,6 +165,7 @@ This project showcases the "vibe coding" approach - rapid AI-assisted developmen
 
 ## Roadmap
 
+- [x] Keyboard shortcuts and accessibility improvements
 - [ ] Scientific calculator functions (sin, cos, tan, log, etc.)
 - [ ] History and memory functions
-- [ ] Keyboard shortcuts and accessibility improvements
+
